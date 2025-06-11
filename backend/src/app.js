@@ -9,18 +9,24 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// API routes first
+// Basic health check route
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
+// API routes
 app.use('/ai', aiRoutes);
 
-// Production static file serving
-
+// Static file serving and client-side routing (only in production)
+if (process.env.NODE_ENV === 'production') {
+    // Serve static files
     app.use(express.static(path.join(__dirname, '../../frontend/dist')));
     
-    // Serve index.html for all other routes in production
-    app.get('*', (req, res) => {
+    // Client-side routing - must be after API routes
+    app.get('/*', (req, res) => {
         res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
     });
-
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
